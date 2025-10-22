@@ -1,0 +1,560 @@
+{
+  "name": "Auto-Post Breaking News Content Using OpenRouter to X (Twitter)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "9b2fdc0f-8c71-4ea9-a9d0-df470f2778df",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -48,
+        512
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=BEFORE ANYTHING ELSE, CHECK THE GSheet TOOL FIRST TO SEE IF THIS NEWS HAS ALREADY BEEN POSTED, EVEN WITH DIFFERENT TEXT. IF IT HAS, SELECT ANOTHER NEWS ITEM.\n\nRANDOMLY SELECT A NEWS ITEM FROM THE LIST OF AVAILABLE RSS SOURCES BELOW.\nDO NOT ALWAYS PICK FROM THE SAME SOURCE.\nShuffle or randomize the list of candidate items before selecting.\n\nYou are a tweet generation agent with a direct, academic, and analytical style, focused on clear, data-driven communication.\nBEFORE CHOOSING THE NEWS, CHECK THE GSheet TOOL TO SEE IF IT HAS ALREADY BEEN POSTED. DO NOT REPEAT ANYTHING.\n\nYour objective is to transform recent global economic and political news into short, relevant, ready-to-publish tweets, focusing exclusively on high-impact macroeconomic and financial topics.\n↘ Available Tools:\n\nrss.read — rss Accesses feeds from:\nThe Hill\n(https://thehill.com/policy/feed/),\n\nBloomberg (Markets & politics)\n(https://feeds.bloomberg.com/markets/news.rss)\n(https://feeds.bloomberg.com/politics/news.rss),\n\nThe Wall Street Journal\n(https://feeds.content.dowjones.io/public/rss/socialeconomyfeed)\n\nCapital Spectator\n(https://www.capitalspectator.com/feed/)\n\nZero Hedge\n(https://feeds.feedburner.com/zerohedge/feed)\n\nEconomic Prism\n(https://economicprism.com/rss_feed.xml)\n\nFinancial Times\n(https://www.ft.com/?format=rss),\n\nBBC News (World)\n(http://feeds.bbci.co.uk/news/world/rss.xml),\n\nThe Guardian (World)\n(https://www.theguardian.com/world/rss),\n\nEconomic Policy Institue Blog\n(https://www.epi.org/blog/feed/)\n\nAmerican Institute for Economic Research\n(https://aier.org/feed/)\n\nFederal Reserve\n(https://www.federalreserve.gov/feeds/press_all.xml)\n(https://feeds.feedburner.com/LibertyStreetEconomics),\n\nimage.process — Processes and optimizes news images\n\n📌 Mandatory Process:\n\nALWAYS use rss.read to get recent news\nALWAYS use image.process for the main image of the selected news\nFILTER only relevant topics:\npolitical economy, economic policies, politics, finance, quantitative finance, blockchain, crypto, monetary policy, fiscal policy, macroeconomic decisions, regulatory actions, major institutional or market moves\n\nIGNORE:\nsports, entertainment, celebrities, weather, health (except when related to fiscal or economic policy), lifestyle, local minor stories\n\n✍ Tweet Style (ACADEMIC ANALYTICAL):\n\n- Academic tone, neutral and objective, but natural and flowing (not rigid or robotic)\n\n- Focus on key actors, their actions, and the consequences\n\n- Include quantitative data wherever possible (e.g. %, $ figures, rates, timeframes, indicators)\n\n- Highlight institutional or macroeconomic impact\n\n- Emphasize precision, clarity, and causal logic — explain what happened and why it matters\n\n- Tweet length ≤ 280 characters\n\n- No hashtags, no @mentions\n\n- No link inside tweet_text (link will be attached separately)\n\n📤 MANDATORY OUTPUT PARSER:\nYou MUST return the final output in **exactly** the following JSON format and nothing else.\nNo explanations, no markdown, no extra text:\n\n{\n  \"tweet_text\": \" emoji, A clear, academically written tweet with a neutral and objective tone. It should focus on key institutional actors, specific actions or developments, and their economic or political consequences. Include quantitative information whenever available (e.g. %, $ figures, rates, timeframes, indicators). Use precise and analytical language with causal logic to explain why the event matters. The text should be natural and flowing, not rigid, while remaining fact-based and concise within 280 characters.\",\n  \"image_data\": \"base64_string_of_image_or_null\",\n  \"news_source\": \"source_domain\",\n  \"category\": \"politics|political_economy|economic_policy|finance|quantitative_finance|blockchain|crypto\",\n  \"has_image\": true\n}\n\n- Never wrap the JSON in triple backticks\n- Never prepend or append explanations\n- If no image, set \"image_data\": null and \"has_image\": false\n\n\n⚠️ CRITICAL RULES:\n\nNEVER return just text — always include the complete JSON structure\nALWAYS process the news image using image.process\nIf no image is available, set: \"image_data\": null, \"has_image\": false\nThe tweet_text field is mandatory and must be ready for publication\nTest image.process before finalizing the JSON\n\n🖼 Image Priority:\n\nPrefer images with people, official documents, political or institutional symbols\nAvoid generic or low-quality images\nUse image.process to optimize for Twitter format (1200x675px ideal)\n\n✅ Expected Response Example:\n\n{\n  \"tweet_text\": \"📊 The ECB signaled a potential rate cut in Q2 2025 following a moderation in headline inflation to 2.1%, close to its medium-term target. The shift suggests a transition from restrictive to neutral policy, with yield curves adjusting downward and markets repricing expectations for a gradual easing cycle across the euro area.\",\n  \"image_data\": null,\n  \"news_source\": \"ecb.europa.eu\",\n  \"category\": \"economic_policy\",\n  \"has_image\": false\n}\n\nIMPORTANT: Always execute rss.read first, select ONE relevant news item, execute image.process on that news image, and return the complete JSON. Don't skip steps!\n",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        512
+      ],
+      "id": "aaa16424-d949-4705-8384-464420137050",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "openai/o3",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        128,
+        336
+      ],
+      "id": "11104277-3b94-487a-accc-8a484eec16f4",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "ZICCu09nNsVs3mTp",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "NEWS",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        336
+      ],
+      "id": "4cbeec0c-79ae-4993-b393-c9e9da074ce5",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "url": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('URL', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedReadTool",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        720
+      ],
+      "id": "ece8ef3f-3405-4562-80e2-5602aa2ac244",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1hdd1xdUYIMeI0B6RmzuJ3G45YZCsBw1gEJX0DbOh9yw/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hdd1xdUYIMeI0B6RmzuJ3G45YZCsBw1gEJX0DbOh9yw/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        752
+      ],
+      "id": "77a0ab7b-6cfc-4727-97eb-ee510d3e997e",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "X42f4tptgxm7l3I9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"tweet_text\": \"📊 The ECB signals potential rate cut in Q2 2025 after inflation moderates to 2.1%. Market pricing shifts as yields adjust downward, indicating easing cycle expectations. Source: ecb.europa.eu\",\n  \"image_data\": null,\n  \"news_source\": \"ecb.europa.eu\",\n  \"category\": \"economic_policy\",\n  \"has_image\": false\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        368,
+        752
+      ],
+      "id": "84962487-2c0b-4f2e-8ebb-1404851eaceb",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6a132420-d60e-41fc-92ec-e1e8536d9a9c",
+              "leftValue": "={{ $json.output.has_image }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        512
+      ],
+      "id": "f7ef5dd7-ab34-4f5d-ab63-0d50d497d2cf",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1024,
+        496
+      ],
+      "id": "84b9d3bc-c887-4a44-bacf-abd2da317cc6",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1280,
+        496
+      ],
+      "id": "15b352b5-28cc-4a6e-9bd2-f30f8efa25d3",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://upload.twitter.com/1.1/media/uploads.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "twitterOAuth1Api",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "media",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1552,
+        496
+      ],
+      "id": "3f8a5d3d-ec38-4b46-9ea1-7d4dea1b1a58",
+      "name": "UPLOAD",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "FLPYnUWukwNr03xN",
+          "name": "X account"
+        },
+        "twitterOAuth1Api": {
+          "id": "2ISxP7mi1NzenbOJ",
+          "name": "X OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('AI Agent').item.json.output.tweet_text }}",
+        "additionalFields": {}
+      },
+      "id": "e228e352-2ddd-4e2c-a434-993910ced7be",
+      "name": "Post to X",
+      "type": "n8n-nodes-base.twitter",
+      "position": [
+        624,
+        800
+      ],
+      "typeVersion": 2,
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "FLPYnUWukwNr03xN",
+          "name": "X account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('AI Agent').item.json.output.tweet_text }}",
+        "additionalFields": {
+          "attachments": "={{ $json.media_id_string }}"
+        }
+      },
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        1808,
+        496
+      ],
+      "id": "f22ce4c9-2b81-4833-9244-dadeedd2f4bd",
+      "name": "Create Tweet",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "FLPYnUWukwNr03xN",
+          "name": "X account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function generateTweetUrl(tweetId) {\n\tif (!tweetId || isNaN(tweetId)) {\n\t\treturn null;\n\t}\n\treturn `https://twitter.com/i/web/status/${tweetId}`;\n}\n\n// Loop through all input items and process them\nreturn $input.all().map(item => {\n\tconst tweetId = item.json.tweetId || item.json.id || item.json.tweet_id;\n\tconst tweetUrl = generateTweetUrl(tweetId);\n\treturn {\n\t\tjson: {\n\t\t\t...item.json,\n\t\t\ttweetUrl,\n\t\t},\n\t};\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2208,
+        800
+      ],
+      "id": "11d62be0-3f02-468b-8567-3680db001075",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1hdd1xdUYIMeI0B6RmzuJ3G45YZCsBw1gEJX0DbOh9yw/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1hdd1xdUYIMeI0B6RmzuJ3G45YZCsBw1gEJX0DbOh9yw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Tweet url": "={{ $json.tweetUrl }}",
+            "Tweet message": "={{ $json.text }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Tweet url",
+              "displayName": "Tweet url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tweet message",
+              "displayName": "Tweet message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2544,
+        800
+      ],
+      "id": "5051693e-1461-4427-ae3a-c4b46454569e",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "X42f4tptgxm7l3I9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.output.image_data }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        752,
+        496
+      ],
+      "id": "1e584ea9-a53f-494e-a0d6-b49c985d2393",
+      "name": "IMAGE DOWNLOAD"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "IMAGE DOWNLOAD",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Post to X",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "UPLOAD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPLOAD": {
+      "main": [
+        [
+          {
+            "node": "Create Tweet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Tweet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to X": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IMAGE DOWNLOAD": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "executionOrder": "v0",
+    "availableInMCP": false
+  },
+  "versionId": "1d3bcc3b-336f-43d5-9f38-acea6457fcce",
+  "meta": {
+    "templateId": "3822",
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b4a1d72eb6049d987562eecd0d83bb914ac3acff572e9cd9ca46fd2332c2788e"
+  },
+  "id": "havNV2GUljVenpQF",
+  "tags": []
+}
